@@ -1,0 +1,30 @@
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      target: dev
+    environment:
+      APP_ENV: development
+      GIN_MODE: debug
+    volumes:
+      - ./backend:/src
+      - go-mod-cache:/go/pkg/mod
+
+  frontend:
+    build:
+      target: dev
+    environment:
+      VITE_PROXY_TARGET: http://api:8080
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    ports: !override
+      - "${WEB_PORT:-3001}:5173"
+
+volumes:
+  go-mod-cache:
+  frontend-node-modules:

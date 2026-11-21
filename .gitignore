@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+
+vendor/
+tmp/
+bin/
+*.exe
+*.log
+
+frontend/node_modules/
+frontend/dist/
+frontend/smoke-output/
+
+.idea/
+.vscode/

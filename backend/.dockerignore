@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+bin/
+tmp/
+*.exe
+*.log
+.idea/
+.vscode/

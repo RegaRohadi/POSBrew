@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: posbrew-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+      POSTGRES_DB: ${DB_NAME:-posbrew}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME:-posbrew}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  api:
+    build:
+      context: ./backend
+      target: production
+    container_name: posbrew-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_NAME: POSBrew
+      APP_ENV: production
+      APP_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      DB_NAME: ${DB_NAME:-posbrew}
+      DB_SSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET:-posbrew-dev-secret-change-me}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      GIN_MODE: release
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: posbrew-frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${WEB_PORT:-3001}:80"
+
+volumes:
+  postgres_data:
